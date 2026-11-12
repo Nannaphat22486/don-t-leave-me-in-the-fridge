@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Don’t leave me in the fridge!</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e8f3f4;--card:#fff;--ink:#17323a;--mute:#5d7a82;--line:#cfe3e6;--ok:#2f9e5b;--okbg:#e0f5e8;--warn:#c47a00;--warnbg:#fff1cf;--bad:#d13b3b;--badbg:#fde1e1;--accent:#1f7a8c;--accentink:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1e22;--card:#172a30;--ink:#e6f2f4;--mute:#8fb0b8;--line:#27434b;--ok:#5fd18c;--okbg:#17372a;--warn:#f0b84a;--warnbg:#3b2f10;--bad:#ff7b7b;--badbg:#401c1c;--accent:#5cc3d6;--accentink:#08242b}}
+:root[data-theme="dark"]{--bg:#0f1e22;--card:#172a30;--ink:#e6f2f4;--mute:#8fb0b8;--line:#27434b;--ok:#5fd18c;--okbg:#17372a;--warn:#f0b84a;--warnbg:#3b2f10;--bad:#ff7b7b;--badbg:#401c1c;--accent:#5cc3d6;--accentink:#08242b}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Nunito,system-ui,sans-serif}
+h1,h2,h3{font-family:Fredoka,system-ui,sans-serif;margin:0;line-height:1.15}
+main{max-width:980px;margin:0 auto;padding:18px 16px 60px}
+header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.door{width:54px;height:76px;border-radius:12px;background:var(--card);border:3px solid var(--accent);position:relative;flex:none}
+.door:before{content:"";position:absolute;left:8px;top:14px;width:4px;height:20px;border-radius:3px;background:var(--accent)}
+.door:after{content:"🥺";position:absolute;right:6px;bottom:8px;font-size:22px}
+h1{font-size:clamp(26px,6vw,40px);font-weight:700}
+.sub{color:var(--mute);margin:2px 0 0}
+.grid{display:grid;gap:16px;grid-template-columns:1fr}
+@media(min-width:820px){.grid{grid-template-columns:340px 1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px}
+.card h2{font-size:21px;margin-bottom:10px}
+label{display:block;font-weight:700;font-size:14px;margin:10px 0 3px}
+input,select{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:9px 10px}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
+.row{display:flex;gap:8px}.row>*{flex:1}
+button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:10px 14px;cursor:pointer;background:var(--accent);color:var(--accentink)}
+button.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+button.sm{padding:6px 10px;font-size:14px}
+.full{width:100%;margin-top:14px}
+.hint{font-size:13px;color:var(--mute);margin-top:4px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{border-radius:14px;padding:12px;text-align:center}
+.stat b{display:block;font:700 24px Fredoka,sans-serif}
+.stat span{font-size:13px}
+.s-ok{background:var(--okbg);color:var(--ok)}.s-warn{background:var(--warnbg);color:var(--warn)}.s-bad{background:var(--badbg);color:var(--bad)}
+.alert{border-radius:14px;padding:12px 14px;background:var(--warnbg);color:var(--ink);border-left:6px solid var(--warn);margin-bottom:16px}
+.alert.red{background:var(--badbg);border-color:var(--bad)}
+.alert b{font-family:Fredoka,sans-serif}
+.stack{display:grid;gap:16px}
+.item{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.item:first-of-type{border-top:0}
+.item .nm{font-weight:700}.item .meta{font-size:13px;color:var(--mute)}
+.pill{display:inline-block;border-radius:999px;padding:2px 10px;font-size:13px;font-weight:700;margin-left:6px}
+.acts{display:flex;gap:6px}
+.recipe{border:1.5px dashed var(--line);border-radius:14px;padding:12px;margin-top:10px}
+.recipe h3{font-size:18px}
+.recipe ol{margin:6px 0 0;padding-left:20px}
+.empty{color:var(--mute);padding:10px 0}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.eat{margin-bottom:16px;border:2px solid var(--warn)}
+.chead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+.chead h2{margin-bottom:0}
+.alert{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="door" aria-hidden="true"></div>
+  <div><h1>Don’t leave me in the fridge!</h1><p class="sub">Track what you buy, eat it before it expires, and see the money you save.</p></div>
+</header>
+
+<section class="card eat"><h2>Eat me first!</h2><div id="alerts"></div></section>
+
+<div class="grid">
+  <div class="stack">
+    <section class="card">
+      <h2>Add to fridge</h2>
+      <div id="formbox">
+        <label for="name">Item name</label>
+        <input id="name" placeholder="e.g. Chicken breast">
+        <label for="type">Type</label>
+        <select id="type"></select>
+        <div class="row">
+          <div><label for="qty">How many</label><input id="qty" type="number" min="0" step="any" value="1"></div>
+          <div><label for="unit">Unit</label><select id="unit"><option>pcs</option><option>g</option><option>kg</option><option>ml</option><option>L</option><option>packs</option></select></div>
+        </div>
+        <div class="row">
+          <div><label for="price">Price paid</label><input id="price" type="number" min="0" step="any" placeholder="0.00"></div>
+          <div><label for="bought">Bought on</label><input id="bought" type="date"></div>
+        </div>
+        <label for="exp">Expiry date</label>
+        <input id="exp" type="date">
+        <p class="hint" id="exphint"></p>
+        <button class="full" id="add">Put it in the fridge</button>
+      </div>
+    </section>
+    <section class="card">
+      <h2>Settings</h2>
+      <label for="remind">Remind me when items have this many days left</label>
+      <select id="remind"><option value="1">1 day</option><option value="2">2 days</option><option value="3">3 days</option><option value="5">5 days</option></select>
+      <label for="cur">Currency symbol</label>
+      <input id="cur" maxlength="3" value="$">
+      
+    </section>
+  </div>
+
+  <div class="stack">
+    <section class="card">
+      <h2>Money saved</h2>
+      <div class="stats">
+        <div class="stat s-ok"><b id="saved">0</b><span>saved by eating it</span></div>
+        <div class="stat s-bad"><b id="wasted">0</b><span>wasted</span></div>
+        <div class="stat s-warn"><b id="risk">0</b><span>at risk now</span></div>
+      </div>
+      <p class="hint" id="saveline"></p>
+    </section>
+
+    <section class="card">
+      <div class="chead"><h2>In your fridge</h2><button class="ghost sm" id="clearrec">Clear everything in fridge</button></div>
+      <div id="list"></div>
+    </section>
+
+    <section class="card">
+      <h2>Easy menu for what’s expiring</h2>
+      <div id="recipes"></div>
+    </section>
+  </div>
+</div>
+</main>
+
+<script>
+const TYPES={
+"Milk & dairy":7,"Eggs":21,"Meat":3,"Fish & seafood":2,"Leftovers":3,"Vegetables":7,"Leafy greens":4,"Fruit":7,"Bread":5,"Sauces & jars":60,"Drinks":5,"Other":7};
+const RECIPES=[
+{n:"Veggie fried rice",k:["Vegetables","Eggs","Leftovers","rice","carrot","onion"],t:"15 min",s:["Scramble 1–2 eggs in a hot pan, set aside.","Stir-fry chopped veggies 3 min.","Add cold rice and soy sauce, toss 4 min.","Mix the eggs back in and serve."]},
+{n:"Cheesy omelette",k:["Eggs","Milk & dairy","cheese","tomato","spinach"],t:"8 min",s:["Beat 2–3 eggs with a splash of milk.","Pour into a buttered pan on medium heat.","Add cheese or chopped veggies, fold, cook 2 min."]},
+{n:"Quick stir-fry",k:["Meat","Vegetables","chicken","pork","beef"],t:"15 min",s:["Slice meat and veggies thin.","Fry meat 5 min until cooked, add veggies 3 min.","Add soy sauce and garlic, serve over rice."]},
+{n:"Fruit smoothie",k:["Fruit","Milk & dairy","banana","yogurt","milk","berry"],t:"5 min",s:["Put fruit and a cup of milk or yogurt in a blender.","Blend 1 min.","Add honey if you like it sweeter."]},
+{n:"French toast",k:["Bread","Eggs","Milk & dairy","milk"],t:"10 min",s:["Whisk 2 eggs with ½ cup milk.","Dip bread slices, fry in butter 2 min per side.","Top with fruit or syrup."]},
+{n:"Clear veggie soup",k:["Vegetables","Meat","Leafy greens","carrot","potato","onion"],t:"20 min",s:["Boil water with salt and chopped onion.","Add other veggies (and meat if any), simmer 15 min.","Season with pepper and serve hot."]},
+{n:"Pan-fried fish with lemon",k:["Fish & seafood","fish","salmon","shrimp"],t:"10 min",s:["Pat fish dry, salt it.","Fry in oil 3–4 min per side.","Finish with lemon and a little butter."]},
+{n:"Fresh salad bowl",k:["Leafy greens","Vegetables","Fruit","lettuce","cucumber","tomato"],t:"5 min",s:["Tear greens into a bowl.","Add chopped veggies or fruit.","Dress with oil, lemon, salt."]},
+{n:"Cheesy toast",k:["Bread","Milk & dairy","cheese","ham"],t:"6 min",s:["Top bread with cheese (and ham or tomato).","Toast in a pan with lid or in the oven until melted."]},
+{n:"Yogurt fruit bowl",k:["Milk & dairy","Fruit","yogurt","banana","apple"],t:"3 min",s:["Spoon yogurt in a bowl.","Top with chopped fruit and honey."]},
+{n:"Leftover wrap",k:["Leftovers","Meat","Leafy greens","Bread"],t:"5 min",s:["Warm leftovers.","Put in a tortilla or bread with greens and sauce.","Roll up and eat."]},
+{n:"Banana pancakes",k:["Fruit","Eggs","banana"],t:"12 min",s:["Mash 1 banana with 2 eggs.","Fry small spoonfuls 2 min per side.","Serve with honey."]}
+];
+const $=id=>document.getElementById(id);
+let S={items:[],saved:0,wasted:0,remind:3,cur:"$"};
+try{const r=localStorage.getItem("fridge-v1");if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
+function save(){try{localStorage.setItem("fridge-v1",JSON.stringify(S))}catch(e){}}
+const iso=d=>{const z=new Date(d.getTime()-d.getTimezoneOffset()*6e4);return z.toISOString().slice(0,10)};
+const today=()=>iso(new Date());
+function addDays(s,n){const d=new Date(s+"T00:00:00");d.setDate(d.getDate()+n);return iso(d)}
+function daysLeft(s){return Math.round((new Date(s+"T00:00:00")-new Date(today()+"T00:00:00"))/864e5)}
+const money=n=>S.cur+(Math.round(n*100)/100).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+$("type").innerHTML=Object.keys(TYPES).map(t=>`<option>${t}</option>`).join("");
+$("bought").value=today();
+let expTouched=false;
+function autoExp(){
+  if(expTouched)return;
+  const t=$("type").value,b=$("bought").value||today();
+  $("exp").value=addDays(b,TYPES[t]);
+  $("exphint").textContent=`Auto-filled: ${t} usually lasts about ${TYPES[t]} days. You can change it.`;
+}
+$("type").onchange=()=>{expTouched=false;autoExp()};
+$("bought").onchange=autoExp;
+$("exp").onchange=()=>{expTouched=true;$("exphint").textContent="Using the date you chose."};
+autoExp();
+$("remind").value=S.remind;$("cur").value=S.cur;
+$("remind").onchange=()=>{S.remind=+$("remind").value;save();render()};
+$("cur").oninput=()=>{S.cur=$("cur").value||"$";save();render()};
+
+$("add").onclick=()=>{
+  const name=$("name").value.trim();
+  if(!name){$("name").focus();$("exphint").textContent="Type the item name first.";return}
+  S.items.push({id:Date.now()+Math.random(),name,type:$("type").value,qty:$("qty").value||1,unit:$("unit").value,price:+$("price").value||0,bought:$("bought").value||today(),exp:$("exp").value||addDays(today(),TYPES[$("type").value])});
+  hideRec=false;save();$("name").value="";$("price").value="";$("qty").value=1;expTouched=false;autoExp();render();
+};
+function done(id,eaten){
+  const i=S.items.find(x=>x.id===id);if(!i)return;
+  if(eaten)S.saved+=i.price;else S.wasted+=i.price;
+  S.items=S.items.filter(x=>x.id!==id);save();render();
+}
+window.done=done;
+
+function status(d){
+  if(d<0)return["s-bad",`Expired ${-d} day${d===-1?"":"s"} ago`];
+  if(d===0)return["s-bad","Expires today"];
+  if(d<=S.remind)return["s-warn",`${d} day${d===1?"":"s"} left`];
+  return["s-ok",`${d} days left`];
+}
+function pickRecipes(items){
+  const out=[];
+  RECIPES.forEach(r=>{
+    const hit=items.filter(i=>r.k.includes(i.type)||r.k.some(w=>w===w.toLowerCase()&&i.name.toLowerCase().includes(w)));
+    if(hit.length)out.push({r,hit,score:hit.length});
+  });
+  return out.sort((a,b)=>b.score-a.score).slice(0,3);
+}
+function render(){
+  const items=[...S.items].sort((a,b)=>a.exp.localeCompare(b.exp));
+  const soon=items.filter(i=>daysLeft(i.exp)<=S.remind);
+  const exp=items.filter(i=>daysLeft(i.exp)<0);
+  // alerts
+  const a=soon.map(i=>{const d=daysLeft(i.exp);return `<div class="alert${d<0?" red":""}"><span><b>${esc(i.name)}</b>: ${d<0?"expired "+(-d)+" day"+(d===-1?"":"s")+" ago":d===0?"expires today":d+" day"+(d===1?"":"s")+" left"}</span><button class="sm" onclick="done(${i.id},true)">Ate it</button></div>`}).join("");
+  $("alerts").innerHTML=a||`<p class="empty">Nothing is close to expiring. Nice!</p>`;
+  // list
+  $("list").innerHTML=items.length?items.map(i=>{
+    const d=daysLeft(i.exp),[c,t]=status(d);
+    return `<div class="item"><div><span class="nm">${esc(i.name)}</span><span class="pill ${c}">${t}</span>
+    <div class="meta">${esc(i.type)} · ${esc(i.qty)} ${esc(i.unit)} · ${money(i.price)} · expires ${i.exp}</div></div>
+    <div class="acts"><button class="sm" onclick="done(${i.id},true)">Ate it</button><button class="sm ghost" onclick="done(${i.id},false)">Threw away</button></div></div>`}).join(""):`<p class="empty">Your fridge is empty. Add what you just bought on the left.</p>`;
+  // stats
+  $("saved").textContent=money(S.saved);$("wasted").textContent=money(S.wasted);
+  $("risk").textContent=money(soon.reduce((s,i)=>s+i.price,0));
+  const tot=S.saved+S.wasted;
+  $("saveline").textContent=tot?`You’ve used ${Math.round(S.saved/tot*100)}% of the money you put in the fridge. “At risk” is what’s expired or close to it.`:"Tap “Ate it” when you finish something and the money counts as saved. Tap “Threw away” and it counts as wasted.";
+  // recipes
+  const pool=soon.length?soon:items;
+  const rec=pickRecipes(pool);
+  $("recipes").innerHTML=hideRec?`<p class="empty">Recipes cleared. New ideas appear when you add another item.</p>`:rec.length?(soon.length?"":`<p class="hint">Nothing is expiring yet. Ideas for what you have:</p>`)+rec.map(({r,hit})=>`<div class="recipe"><h3>${r.n} <span class="pill s-ok">${r.t}</span></h3>
+  <div class="meta">Uses: ${[...new Set(hit.map(i=>esc(i.name)))].join(", ")}</div><ol>${r.s.map(s=>`<li>${s}</li>`).join("")}</ol></div>`).join(""):`<p class="empty">Add items to get easy menu ideas.</p>`;
+}
+let hideRec=false;
+$("clearrec").onclick=()=>{if(S.items.length&&confirm("Remove everything you put in the fridge? Your saved/wasted money totals will stay.")){S.items=[];save();render()}};
+render();
+</script>
+</body>
+</html>
