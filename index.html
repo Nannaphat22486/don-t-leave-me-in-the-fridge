@@ -56,6 +56,10 @@ button.sm{padding:6px 10px;font-size:14px}
 .eat{margin-bottom:16px;border:2px solid var(--warn)}
 .chead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
 .chead h2{margin-bottom:0}
+.bar{height:6px;border-radius:99px;background:var(--line);margin-top:5px;max-width:220px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok)}
+.useRow{width:100%;background:var(--bg);border-radius:12px;padding:8px 10px}
+.useRow label{margin-top:0}
 .alert{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
 </style>
 </head>
@@ -173,13 +177,25 @@ $("cur").oninput=()=>{S.cur=$("cur").value||"$";save();render()};
 $("add").onclick=()=>{
   const name=$("name").value.trim();
   if(!name){$("name").focus();$("exphint").textContent="Type the item name first.";return}
-  S.items.push({id:Date.now()+Math.random(),name,type:$("type").value,qty:$("qty").value||1,unit:$("unit").value,price:+$("price").value||0,bought:$("bought").value||today(),exp:$("exp").value||addDays(today(),TYPES[$("type").value])});
+  S.items.push({id:Date.now()+Math.random(),name,type:$("type").value,qty:+$("qty").value||1,total:+$("qty").value||1,unit:$("unit").value,price:+$("price").value||0,bought:$("bought").value||today(),exp:$("exp").value||addDays(today(),TYPES[$("type").value])});
   hideRec=false;save();$("name").value="";$("price").value="";$("qty").value=1;expTouched=false;autoExp();render();
 };
 function done(id,eaten){
   const i=S.items.find(x=>x.id===id);if(!i)return;
   if(eaten)S.saved+=i.price;else S.wasted+=i.price;
   S.items=S.items.filter(x=>x.id!==id);save();render();
+}
+let openUse=null;
+function toggleUse(id){openUse=openUse===id?null:id;render()}
+function useSome(id){
+  const i=S.items.find(x=>x.id===id);if(!i)return;
+  const v=parseFloat(document.getElementById("use-"+id).value);
+  if(!(v>0))return;
+  const u=Math.min(v,+i.qty),per=i.price/i.qty;
+  S.saved+=per*u;i.price=Math.max(0,i.price-per*u);
+  i.total=i.total||i.qty;i.qty=Math.round((i.qty-u)*1000)/1000;
+  if(i.qty<=0)S.items=S.items.filter(x=>x!==i);
+  openUse=null;save();render();
 }
 window.done=done;
 
@@ -208,8 +224,8 @@ function render(){
   $("list").innerHTML=items.length?items.map(i=>{
     const d=daysLeft(i.exp),[c,t]=status(d);
     return `<div class="item"><div><span class="nm">${esc(i.name)}</span><span class="pill ${c}">${t}</span>
-    <div class="meta">${esc(i.type)} · ${esc(i.qty)} ${esc(i.unit)} · ${money(i.price)} · expires ${i.exp}</div></div>
-    <div class="acts"><button class="sm" onclick="done(${i.id},true)">Ate it</button><button class="sm ghost" onclick="done(${i.id},false)">Threw away</button></div></div>`}).join(""):`<p class="empty">Your fridge is empty. Add what you just bought on the left.</p>`;
+    <div class="meta">${esc(i.type)} · ${esc(i.qty)} left of ${esc(i.total||i.qty)} ${esc(i.unit)} · worth ${money(i.price)} · expires ${i.exp}</div><div class="bar"><i style="width:${Math.min(100,Math.round(i.qty/(i.total||i.qty)*100))}%"></i></div></div>
+    <div class="acts"><button class="sm" onclick="toggleUse(${i.id})">Use some</button><button class="sm ghost" onclick="done(${i.id},true)">Ate all</button><button class="sm ghost" onclick="done(${i.id},false)">Threw away</button></div>${openUse===i.id?`<div class="useRow"><label for="use-${i.id}">How many ${esc(i.unit)} did you use? (${esc(i.qty)} left)</label><div class="row"><input id="use-${i.id}" type="number" min="0" step="any" max="${esc(i.qty)}" value="1"><button class="sm" onclick="useSome(${i.id})">Confirm</button></div></div>`:""}</div>`}).join(""):`<p class="empty">Your fridge is empty. Add what you just bought on the left.</p>`;
   // stats
   $("saved").textContent=money(S.saved);$("wasted").textContent=money(S.wasted);
   $("risk").textContent=money(soon.reduce((s,i)=>s+i.price,0));
