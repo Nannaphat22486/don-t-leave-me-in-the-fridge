@@ -28,7 +28,8 @@ h1{font-size:clamp(26px,6vw,40px);font-weight:700}
 label{display:block;font-weight:700;font-size:14px;margin:10px 0 3px}
 input,select{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:9px 10px}
 input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
-.row{display:flex;gap:8px}.row>*{flex:1}
+.row{display:flex;gap:8px}.row>*{flex:1;min-width:0}
+.useRow .row{flex-wrap:wrap}.useRow .row>*{flex:1 1 110px}
 button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:10px 14px;cursor:pointer;background:var(--accent);color:var(--accentink)}
 button.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
 button.sm{padding:6px 10px;font-size:14px}
@@ -68,6 +69,7 @@ button.sm{padding:6px 10px;font-size:14px}
 <header>
   <div class="door" aria-hidden="true"></div>
   <div><h1>Don’t leave me in the fridge!</h1><p class="sub">Track what you buy, eat it before it expires, and see the money you save.</p></div>
+  <button class="ghost sm" id="lang" style="margin-left:auto">ไทย</button>
 </header>
 
 <section class="card eat"><h2>Eat me first!</h2><div id="alerts"></div></section>
@@ -83,7 +85,7 @@ button.sm{padding:6px 10px;font-size:14px}
         <select id="type"></select>
         <div class="row">
           <div><label for="qty">How many</label><input id="qty" type="number" min="0" step="any" value="1"></div>
-          <div><label for="unit">Unit</label><select id="unit"><option>pcs</option><option>g</option><option>kg</option><option>ml</option><option>L</option><option>packs</option></select></div>
+          <div><label for="unit">Unit</label><select id="unit"><option value="pcs">pcs</option><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="L">L</option><option value="packs">packs</option></select></div>
         </div>
         <div class="row">
           <div><label for="price">Price paid</label><input id="price" type="number" min="0" step="any" placeholder="0.00"></div>
@@ -147,9 +149,13 @@ const RECIPES=[
 {n:"Banana pancakes",k:["Fruit","Eggs","banana"],t:"12 min",s:["Mash 1 banana with 2 eggs.","Fry small spoonfuls 2 min per side.","Serve with honey."]}
 ];
 const $=id=>document.getElementById(id);
-let S={items:[],saved:0,wasted:0,remind:3,cur:"$"};
+let S={items:[],saved:0,wasted:0,remind:3,cur:"$",lang:"en"};
 try{const r=localStorage.getItem("fridge-v1");if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
 function save(){try{localStorage.setItem("fridge-v1",JSON.stringify(S))}catch(e){}}
+const L=(e,t)=>S.lang==="th"?t:e;
+const U=u=>S.lang==="th"?({pcs:"ชิ้น",packs:"แพ็ค"}[u]||u):u;
+const TYPE_TH={"Milk & dairy":"นมและผลิตภัณฑ์นม","Eggs":"ไข่","Meat":"เนื้อสัตว์","Fish & seafood":"ปลาและอาหารทะเล","Leftovers":"อาหารเหลือ","Vegetables":"ผัก","Leafy greens":"ผักใบเขียว","Fruit":"ผลไม้","Bread":"ขนมปัง","Sauces & jars":"ซอสและของในขวด","Drinks":"เครื่องดื่ม","Other":"อื่นๆ"};
+const rl=r=>S.lang==="th"?RTH[RECIPES.indexOf(r)]:r;
 const iso=d=>{const z=new Date(d.getTime()-d.getTimezoneOffset()*6e4);return z.toISOString().slice(0,10)};
 const today=()=>iso(new Date());
 function addDays(s,n){const d=new Date(s+"T00:00:00");d.setDate(d.getDate()+n);return iso(d)}
@@ -157,18 +163,34 @@ function daysLeft(s){return Math.round((new Date(s+"T00:00:00")-new Date(today()
 const money=n=>S.cur+(Math.round(n*100)/100).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
-$("type").innerHTML=Object.keys(TYPES).map(t=>`<option>${t}</option>`).join("");
+const RTH=[{n:"ผัดข้าวผักใส่ไข่",t:"15 นาที",s:["ตีไข่ 1–2 ฟอง ผัดในกระทะร้อนแล้วพักไว้","ผัดผักหั่นชิ้นเล็ก 3 นาที","ใส่ข้าวเย็นกับซีอิ๊ว ผัด 4 นาที","ใส่ไข่กลับลงไปคลุกแล้วเสิร์ฟ"]},{n:"ไข่เจียวชีส",t:"8 นาที",s:["ตีไข่ 2–3 ฟองกับนมเล็กน้อย","เทลงกระทะใส่เนย ไฟกลาง","ใส่ชีสหรือผักสับ พับครึ่ง ทอดต่อ 2 นาที"]},{n:"ผัดเนื้อกับผัก",t:"15 นาที",s:["หั่นเนื้อและผักเป็นชิ้นบาง","ผัดเนื้อ 5 นาทีจนสุก ใส่ผักอีก 3 นาที","ปรุงด้วยซีอิ๊วและกระเทียม เสิร์ฟกับข้าว"]},{n:"สมูทตี้ผลไม้",t:"5 นาที",s:["ใส่ผลไม้กับนมหรือโยเกิร์ต 1 ถ้วยในเครื่องปั่น","ปั่น 1 นาที","ใส่น้ำผึ้งถ้าอยากหวานขึ้น"]},{n:"เฟรนช์โทสต์",t:"10 นาที",s:["ตีไข่ 2 ฟองกับนม ½ ถ้วย","จุ่มขนมปัง ทอดในเนยด้านละ 2 นาที","โรยผลไม้หรือราดน้ำเชื่อม"]},{n:"ต้มจืดผัก",t:"20 นาที",s:["ต้มน้ำใส่เกลือและหอมหัวใหญ่หั่น","ใส่ผักอื่นๆ (และเนื้อสัตว์ถ้ามี) เคี่ยว 15 นาที","ปรุงด้วยพริกไทย เสิร์ฟร้อนๆ"]},{n:"ปลาทอดราดมะนาว",t:"10 นาที",s:["ซับปลาให้แห้ง โรยเกลือ","ทอดในน้ำมันด้านละ 3–4 นาที","บีบมะนาวและใส่เนยเล็กน้อย"]},{n:"สลัดผักสด",t:"5 นาที",s:["ฉีกผักใบเขียวใส่ชาม","ใส่ผักหรือผลไม้หั่น","ราดน้ำมัน มะนาว เกลือ"]},{n:"ขนมปังชีส",t:"6 นาที",s:["วางชีส (และแฮมหรือมะเขือเทศ) บนขนมปัง","อบหรือปิ้งในกระทะปิดฝาจนชีสละลาย"]},{n:"โยเกิร์ตผลไม้",t:"3 นาที",s:["ตักโยเกิร์ตใส่ชาม","โรยผลไม้หั่นและน้ำผึ้ง"]},{n:"แรปเศษอาหาร",t:"5 นาที",s:["อุ่นอาหารที่เหลือ","ห่อด้วยแผ่นแป้งหรือขนมปังกับผักและซอส","ม้วนแล้วทานได้เลย"]},{n:"แพนเค้กกล้วย",t:"12 นาที",s:["บดกล้วย 1 ลูกกับไข่ 2 ฟอง","ทอดทีละช้อน ด้านละ 2 นาที","เสิร์ฟกับน้ำผึ้ง"]}];
+const TH={"Don’t leave me in the fridge!":"อย่าลืมฉันไว้ในตู้เย็น!","Track what you buy, eat it before it expires, and see the money you save.":"จดของที่ซื้อ กินก่อนหมดอายุ และดูว่าประหยัดเงินได้เท่าไร","Eat me first!":"กินฉันก่อน!","Add to fridge":"เพิ่มของเข้าตู้เย็น","Item name":"ชื่อวัตถุดิบ","Type":"ประเภท","How many":"จำนวน","Unit":"หน่วย","Price paid":"ราคาที่จ่าย","Bought on":"วันที่ซื้อ","Expiry date":"วันหมดอายุ","Put it in the fridge":"ใส่เข้าตู้เย็น","Settings":"ตั้งค่า","Remind me when items have this many days left":"เตือนเมื่อเหลืออีกกี่วัน","1 day":"1 วัน","2 days":"2 วัน","3 days":"3 วัน","5 days":"5 วัน","Currency symbol":"สัญลักษณ์สกุลเงิน","Money saved":"เงินที่ประหยัดได้","saved by eating it":"ประหยัดได้เพราะกินทัน","wasted":"เสียเปล่า","at risk now":"เสี่ยงเสียตอนนี้","In your fridge":"ในตู้เย็นของคุณ","Clear everything in fridge":"ล้างของในตู้เย็นทั้งหมด","Easy menu for what’s expiring":"เมนูง่ายๆ จากของที่ใกล้หมดอายุ","pcs":"ชิ้น","packs":"แพ็ค"};
+function buildTypes(){const v=$("type").value;$("type").innerHTML=Object.keys(TYPES).map(t=>`<option value="${t}">${L(t,TYPE_TH[t])}</option>`).join("");if(v)$("type").value=v}
+function applyStatic(){
+  const w=document.createTreeWalker(document.querySelector("main"),NodeFilter.SHOW_TEXT);let n;
+  while(n=w.nextNode()){
+    if(n.parentNode.closest("#alerts,#list,#recipes,#type,#exphint,#saveline"))continue;
+    const o=n._en||(n._en=n.nodeValue),k=o.trim();
+    if(TH[k])n.nodeValue=S.lang==="th"?o.replace(k,TH[k]):o;
+  }
+  $("name").placeholder=L("e.g. Chicken breast","เช่น อกไก่");
+  $("lang").textContent=S.lang==="th"?"EN":"ไทย";
+  document.documentElement.lang=S.lang;
+  document.title=L("Don’t leave me in the fridge!","อย่าลืมฉันไว้ในตู้เย็น!");
+}
+function setLang(){buildTypes();applyStatic();autoExp();render()}
+buildTypes();
 $("bought").value=today();
 let expTouched=false;
 function autoExp(){
   if(expTouched)return;
   const t=$("type").value,b=$("bought").value||today();
   $("exp").value=addDays(b,TYPES[t]);
-  $("exphint").textContent=`Auto-filled: ${t} usually lasts about ${TYPES[t]} days. You can change it.`;
+  $("exphint").textContent=L(`Auto-filled: ${t} usually lasts about ${TYPES[t]} days. You can change it.`,`เติมอัตโนมัติ: ${TYPE_TH[t]} เก็บได้ประมาณ ${TYPES[t]} วัน แก้ไขได้`);
 }
 $("type").onchange=()=>{expTouched=false;autoExp()};
 $("bought").onchange=autoExp;
-$("exp").onchange=()=>{expTouched=true;$("exphint").textContent="Using the date you chose."};
+$("exp").onchange=()=>{expTouched=true;$("exphint").textContent=L("Using the date you chose.","ใช้วันที่ที่คุณเลือก")};
 autoExp();
 $("remind").value=S.remind;$("cur").value=S.cur;
 $("remind").onchange=()=>{S.remind=+$("remind").value;save();render()};
@@ -176,9 +198,13 @@ $("cur").oninput=()=>{S.cur=$("cur").value||"$";save();render()};
 
 $("add").onclick=()=>{
   const name=$("name").value.trim();
-  if(!name){$("name").focus();$("exphint").textContent="Type the item name first.";return}
-  S.items.push({id:Date.now()+Math.random(),name,type:$("type").value,qty:+$("qty").value||1,total:+$("qty").value||1,unit:$("unit").value,price:+$("price").value||0,bought:$("bought").value||today(),exp:$("exp").value||addDays(today(),TYPES[$("type").value])});
-  hideRec=false;save();$("name").value="";$("price").value="";$("qty").value=1;expTouched=false;autoExp();render();
+  if(!name){$("name").focus();$("exphint").textContent=L("Type the item name first.","กรุณาใส่ชื่อวัตถุดิบก่อน");return}
+  let msg="";
+  const q=+$("qty").value||1,ty=$("type").value,un=$("unit").value,bd=$("bought").value||today(),pr=+$("price").value||0,ex=$("exp").value||addDays(bd,TYPES[ty]);
+  const m=S.items.find(x=>x.name.trim().toLowerCase()===name.toLowerCase()&&x.type===ty&&x.unit===un&&x.bought===bd);
+  if(m){const tot=+m.total||+m.qty;m.qty=Math.round((+m.qty+q)*1000)/1000;m.total=Math.round((tot+q)*1000)/1000;m.price+=pr;if(ex<m.exp)m.exp=ex;msg=L("Added to your existing "+name+".","เพิ่มเข้ารายการ "+name+" เดิมแล้ว")}
+  else S.items.push({id:Date.now()+Math.random(),name,type:ty,qty:q,total:q,unit:un,price:pr,bought:bd,exp:ex});
+  hideRec=false;save();$("name").value="";$("price").value="";$("qty").value=1;expTouched=false;autoExp();if(msg)$("exphint").textContent=msg;render();
 };
 function done(id,eaten){
   const i=S.items.find(x=>x.id===id);if(!i)return;
@@ -197,14 +223,31 @@ function useSome(id){
   if(i.qty<=0)S.items=S.items.filter(x=>x!==i);
   openUse=null;save();render();
 }
+let editId=null;
+function toggleEdit(id){editId=editId===id?null:id;openUse=null;render()}
+function removeItem(id){if(confirm(L("Remove this item? It won’t count as saved or wasted.","ลบรายการนี้? จะไม่นับเป็นเงินที่ประหยัดหรือเสียเปล่า"))){S.items=S.items.filter(x=>x.id!==id);if(editId===id)editId=null;save();render()}}
+function saveEdit(id){
+  const i=S.items.find(x=>x.id===id);if(!i)return;
+  const g=k=>document.getElementById("e-"+k+"-"+id).value;
+  const nm=g("name").trim(),q=parseFloat(g("qty")),tt=parseFloat(g("total"));
+  if(!nm||!(q>=0)||!(tt>0))return;
+  Object.assign(i,{name:nm,type:g("type"),unit:g("unit"),qty:q,total:Math.max(tt,q),price:parseFloat(g("price"))||0,bought:g("bought")||i.bought,exp:g("exp")||i.exp});
+  if(i.qty<=0)S.items=S.items.filter(x=>x!==i);
+  editId=null;save();render();
+}
+function editForm(i){
+  const f=(k,lbl,el)=>`<div><label for="e-${k}-${i.id}">${lbl}</label>${el}</div>`;
+  const inp=(k,type,val,x="")=>`<input id="e-${k}-${i.id}" type="${type}" value="${esc(val)}" ${x}>`;
+  const opts=(arr,cur,tf)=>arr.map(o=>`<option value="${esc(o)}"${o===cur?" selected":""}>${esc(tf(o))}</option>`).join("");
+  return `<div class="useRow"><div class="row">${f("name",L("Item name","ชื่อวัตถุดิบ"),inp("name","text",i.name))}${f("type",L("Type","ประเภท"),`<select id="e-type-${i.id}">${opts(Object.keys(TYPES),i.type,t=>L(t,TYPE_TH[t]))}</select>`)}</div>
+  <div class="row">${f("qty",L("Left","คงเหลือ"),inp("qty","number",i.qty,'min="0" step="any"'))}${f("total",L("Bought total","ซื้อมาทั้งหมด"),inp("total","number",i.total||i.qty,'min="0" step="any"'))}${f("unit",L("Unit","หน่วย"),`<select id="e-unit-${i.id}">${opts(["pcs","g","kg","ml","L","packs"],i.unit,U)}</select>`)}</div>
+  <div class="row">${f("price",L("Value left","มูลค่าที่เหลือ"),inp("price","number",i.price,'min="0" step="any"'))}${f("bought",L("Bought on","วันที่ซื้อ"),inp("bought","date",i.bought))}${f("exp",L("Expiry date","วันหมดอายุ"),inp("exp","date",i.exp))}</div>
+  <div class="row" style="margin-top:10px"><button class="sm" onclick="saveEdit(${i.id})">${L("Save changes","บันทึก")}</button><button class="sm ghost" onclick="toggleEdit(${i.id})">${L("Cancel","ยกเลิก")}</button></div></div>`;
+}
 window.done=done;
 
-function status(d){
-  if(d<0)return["s-bad",`Expired ${-d} day${d===-1?"":"s"} ago`];
-  if(d===0)return["s-bad","Expires today"];
-  if(d<=S.remind)return["s-warn",`${d} day${d===1?"":"s"} left`];
-  return["s-ok",`${d} days left`];
-}
+function dtxt(d){return d<0?L(`Expired ${-d} day${d===-1?"":"s"} ago`,`หมดอายุแล้ว ${-d} วัน`):d===0?L("Expires today","หมดอายุวันนี้"):L(`${d} day${d===1?"":"s"} left`,`เหลือ ${d} วัน`)}
+function status(d){return[d<=0?"s-bad":d<=S.remind?"s-warn":"s-ok",dtxt(d)]}
 function pickRecipes(items){
   const out=[];
   RECIPES.forEach(r=>{
@@ -218,28 +261,29 @@ function render(){
   const soon=items.filter(i=>daysLeft(i.exp)<=S.remind);
   const exp=items.filter(i=>daysLeft(i.exp)<0);
   // alerts
-  const a=soon.map(i=>{const d=daysLeft(i.exp);return `<div class="alert${d<0?" red":""}"><span><b>${esc(i.name)}</b>: ${d<0?"expired "+(-d)+" day"+(d===-1?"":"s")+" ago":d===0?"expires today":d+" day"+(d===1?"":"s")+" left"}</span><button class="sm" onclick="done(${i.id},true)">Ate it</button></div>`}).join("");
-  $("alerts").innerHTML=a||`<p class="empty">Nothing is close to expiring. Nice!</p>`;
+  const a=soon.map(i=>{const d=daysLeft(i.exp);return `<div class="alert${d<0?" red":""}"><span><b>${esc(i.name)}</b>: ${dtxt(d)}</span><button class="sm" onclick="done(${i.id},true)">${L("Ate it","กินแล้ว")}</button></div>`}).join("");
+  $("alerts").innerHTML=a||`<p class="empty">${L("Nothing is close to expiring. Nice!","ยังไม่มีของใกล้หมดอายุ เยี่ยมมาก!")}</p>`;
   // list
   $("list").innerHTML=items.length?items.map(i=>{
     const d=daysLeft(i.exp),[c,t]=status(d);
     return `<div class="item"><div><span class="nm">${esc(i.name)}</span><span class="pill ${c}">${t}</span>
-    <div class="meta">${esc(i.type)} · ${esc(i.qty)} left of ${esc(i.total||i.qty)} ${esc(i.unit)} · worth ${money(i.price)} · expires ${i.exp}</div><div class="bar"><i style="width:${Math.min(100,Math.round(i.qty/(i.total||i.qty)*100))}%"></i></div></div>
-    <div class="acts"><button class="sm" onclick="toggleUse(${i.id})">Use some</button><button class="sm ghost" onclick="done(${i.id},true)">Ate all</button><button class="sm ghost" onclick="done(${i.id},false)">Threw away</button></div>${openUse===i.id?`<div class="useRow"><label for="use-${i.id}">How many ${esc(i.unit)} did you use? (${esc(i.qty)} left)</label><div class="row"><input id="use-${i.id}" type="number" min="0" step="any" max="${esc(i.qty)}" value="1"><button class="sm" onclick="useSome(${i.id})">Confirm</button></div></div>`:""}</div>`}).join(""):`<p class="empty">Your fridge is empty. Add what you just bought on the left.</p>`;
+    <div class="meta">${esc(L(i.type,TYPE_TH[i.type]||i.type))} · ${L(`${esc(i.qty)} left of ${esc(i.total||i.qty)} ${esc(i.unit)}`,`เหลือ ${esc(i.qty)} จาก ${esc(i.total||i.qty)} ${esc(U(i.unit))}`)} · ${L("worth ","มูลค่า ")}${money(i.price)} · ${L("expires ","หมดอายุ ")}${i.exp}</div><div class="bar"><i style="width:${Math.min(100,Math.round(i.qty/(i.total||i.qty)*100))}%"></i></div></div>
+    <div class="acts"><button class="sm" onclick="toggleUse(${i.id})">${L("Use some","ใช้บางส่วน")}</button><button class="sm ghost" onclick="done(${i.id},true)">${L("Ate all","กินหมด")}</button><button class="sm ghost" onclick="done(${i.id},false)">${L("Threw away","ทิ้งแล้ว")}</button><button class="sm ghost" onclick="toggleEdit(${i.id})">${L("Edit","แก้ไข")}</button><button class="sm ghost" onclick="removeItem(${i.id})">${L("Remove","ลบ")}</button></div>${openUse===i.id?`<div class="useRow"><label for="use-${i.id}">${L("How many "+esc(i.unit)+" did you use?","ใช้ไปกี่ "+esc(U(i.unit))+"?")} (${L(esc(i.qty)+" left","เหลือ "+esc(i.qty))})</label><div class="row"><input id="use-${i.id}" type="number" min="0" step="any" max="${esc(i.qty)}" value="1"><button class="sm" onclick="useSome(${i.id})">${L("Confirm","ยืนยัน")}</button></div></div>`:""}${editId===i.id?editForm(i):""}</div>`}).join(""):`<p class="empty">${L("Your fridge is empty. Add what you just bought.","ตู้เย็นว่างอยู่ เพิ่มของที่เพิ่งซื้อได้เลย")}</p>`;
   // stats
   $("saved").textContent=money(S.saved);$("wasted").textContent=money(S.wasted);
   $("risk").textContent=money(soon.reduce((s,i)=>s+i.price,0));
   const tot=S.saved+S.wasted;
-  $("saveline").textContent=tot?`You’ve used ${Math.round(S.saved/tot*100)}% of the money you put in the fridge. “At risk” is what’s expired or close to it.`:"Tap “Ate it” when you finish something and the money counts as saved. Tap “Threw away” and it counts as wasted.";
+  $("saveline").textContent=tot?L(`You’ve used ${Math.round(S.saved/tot*100)}% of the money you put in the fridge. “At risk” is what’s expired or close to it.`,`คุณใช้ของได้ทัน ${Math.round(S.saved/tot*100)}% ของเงินที่ซื้อมา “เสี่ยงเสียตอนนี้” คือของที่หมดอายุหรือใกล้หมดอายุ`):L("Tap “Use some” or “Ate all” when you use something and the money counts as saved. Tap “Threw away” and it counts as wasted.","กด “ใช้บางส่วน” หรือ “กินหมด” เมื่อใช้ของ เงินจะนับเป็นเงินที่ประหยัดได้ ถ้ากด “ทิ้งแล้ว” จะนับเป็นของเสีย");
   // recipes
   const pool=soon.length?soon:items;
   const rec=pickRecipes(pool);
-  $("recipes").innerHTML=hideRec?`<p class="empty">Recipes cleared. New ideas appear when you add another item.</p>`:rec.length?(soon.length?"":`<p class="hint">Nothing is expiring yet. Ideas for what you have:</p>`)+rec.map(({r,hit})=>`<div class="recipe"><h3>${r.n} <span class="pill s-ok">${r.t}</span></h3>
-  <div class="meta">Uses: ${[...new Set(hit.map(i=>esc(i.name)))].join(", ")}</div><ol>${r.s.map(s=>`<li>${s}</li>`).join("")}</ol></div>`).join(""):`<p class="empty">Add items to get easy menu ideas.</p>`;
+  $("recipes").innerHTML=hideRec?`<p class="empty">Recipes cleared. New ideas appear when you add another item.</p>`:rec.length?(soon.length?"":`<p class="hint">${L("Nothing is expiring yet. Ideas for what you have:","ยังไม่มีของใกล้หมดอายุ ไอเดียจากของที่มี:")}</p>`)+rec.map(({r,hit})=>`<div class="recipe"><h3>${rl(r).n} <span class="pill s-ok">${rl(r).t}</span></h3>
+  <div class="meta">${L("Uses:","ใช้:")} ${[...new Set(hit.map(i=>esc(i.name)))].join(", ")}</div><ol>${rl(r).s.map(s=>`<li>${s}</li>`).join("")}</ol></div>`).join(""):`<p class="empty">${L("Add items to get easy menu ideas.","เพิ่มของเพื่อดูเมนูง่ายๆ")}</p>`;
 }
 let hideRec=false;
-$("clearrec").onclick=()=>{if(S.items.length&&confirm("Remove everything you put in the fridge? Your saved/wasted money totals will stay.")){S.items=[];save();render()}};
-render();
+$("clearrec").onclick=()=>{if(S.items.length&&confirm(L("Remove everything you put in the fridge? Your saved/wasted money totals will stay.","ล้างของทั้งหมดในตู้เย็น? ยอดเงินที่ประหยัด/เสียจะยังอยู่"))){S.items=[];save();render()}};
+$("lang").onclick=()=>{S.lang=S.lang==="th"?"en":"th";save();setLang()};
+setLang();
 </script>
 </body>
 </html>
